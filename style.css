@@ -32,7 +32,7 @@ body {
   border-radius: 16px; 
   padding: 2.5rem; 
   width: 100%;
-  max-width: 380px;
+  max-width: 480px;
   min-height: 700px;
   box-sizing: border-box;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.1);
@@ -316,4 +316,18 @@ button:active {
 .terminal-body::-webkit-scrollbar-thumb {
   background: rgba(255,255,255,0.1);
   border-radius: 3px;
+}
+
+@media (min-width: 1300px) {
+  .card {
+    transform: scale(1.4);
+    transform-origin: center center;
+  }
+}
+
+@media (max-height: 1000px) {
+  .card {
+    transform: scale(1);
+    transform-origin: center center;
+  }
 }
