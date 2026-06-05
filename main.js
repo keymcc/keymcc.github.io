@@ -23,7 +23,6 @@ const RJ_FAKE_LOGS = [
   "> Đang trích xuất các chữ số: {SN}",
   "> Đang phân tách chuỗi thành các phân đoạn a, b, c...",
   "> Đang áp dụng thuật toán tổng kiểm mã chuẩn...",
-  "> Đang áp dụng thuật toán tổng kiểm mã cũ (Legacy)...",
   "> Hoàn tất tính toán mã."
 ];
 
@@ -41,7 +40,7 @@ async function simulateLogs(sn, logsArray) {
   terminalContent.innerHTML = '';
   terminalWrapper.classList.remove('hidden');
   resultContainer.classList.add('hidden');
-  
+
   let i = 0;
   return new Promise((resolve) => {
     logInterval = setInterval(() => {
@@ -66,12 +65,12 @@ function calculateRJ(rawSerial) {
   }
 
   if (numericSerial.length < 4) {
-    return { error: 'Số Serial quá ngắn (cần ít nhất 4 chữ số).' };
+    return { error: 'Số Serial quá ngắn' };
   }
 
   const strA = numericSerial.substring(0, 2);
   const strB = numericSerial.substring(numericSerial.length - 4);
-  
+
   const a = parseInt(strA, 10);
   const b = parseInt(strB, 10);
 
@@ -83,7 +82,7 @@ function calculateRJ(rawSerial) {
   const legacyKey = a + b + 140893;
 
   return {
-    key: `Mã chuẩn (Standard): ${standardKey}\n🔑 Mã cũ (Legacy): ${legacyKey}`
+    key: `${standardKey}`
   };
 }
 
@@ -104,9 +103,9 @@ genBtn.addEventListener('click', async () => {
   if (deviceType === 'ronaldjack') {
     const simulationPromise = simulateLogs(sn, RJ_FAKE_LOGS);
     const rjResult = calculateRJ(sn);
-    
+
     await simulationPromise;
-    
+
     if (rjResult.error) {
       resultContainer.classList.add('error');
       appendLog(`> LỖI: ${rjResult.error}`, 'error');
@@ -116,7 +115,7 @@ genBtn.addEventListener('click', async () => {
       appendLog(`> THÀNH CÔNG: Đã tạo mã!`, 'success');
       resultEl.textContent = `🔑 ${rjResult.key}`;
     }
-    
+
     resultContainer.classList.remove('hidden');
     genBtn.disabled = false;
     snInput.disabled = false;
@@ -126,7 +125,7 @@ genBtn.addEventListener('click', async () => {
   // WiseEye Flow
   const simulationPromise = simulateLogs(sn, WE_FAKE_LOGS);
   let isFetchComplete = false;
-  
+
   const wakeUpTimeout = setTimeout(() => {
     if (!isFetchComplete) {
       appendLog("> Đang đánh thức máy chủ Render... Vui lòng đợi khoảng 1 phút...", "warning");
@@ -137,10 +136,10 @@ genBtn.addEventListener('click', async () => {
     const resp = await fetch(`https://keymcc.onrender.com/api/key?sn=${encodeURIComponent(sn)}`);
     isFetchComplete = true;
     clearTimeout(wakeUpTimeout);
-    
+
     const data = await resp.json();
-    await simulationPromise; 
-    
+    await simulationPromise;
+
     if (data.error && data.error === "Failed to capture the required strings for key calculation.") {
       data.error = "Không thể trích xuất chuỗi yêu cầu để tính toán mã.";
     }
@@ -158,7 +157,7 @@ genBtn.addEventListener('click', async () => {
     isFetchComplete = true;
     clearTimeout(wakeUpTimeout);
     clearInterval(logInterval);
-    
+
     resultContainer.classList.add('error');
     appendLog('> LỖI: Không thể kết nối tới máy chủ', 'error');
     resultEl.textContent = '❌ Không thể kết nối tới máy chủ';
