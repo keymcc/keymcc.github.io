@@ -12,15 +12,15 @@
 }
 
 body {
-  margin: 0; 
+  margin: 0;
   padding: 1rem;
   box-sizing: border-box;
   min-height: 100vh;
-  display: flex; 
-  align-items: center; 
+  display: flex;
+  align-items: center;
   justify-content: center;
   background: radial-gradient(circle at 50% -20%, #1a1a3a, var(--bg-dark) 80%);
-  font-family: 'Inter', sans-serif; 
+  font-family: 'Inter', sans-serif;
   color: #e0e0ff;
 }
 
@@ -29,8 +29,8 @@ body {
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 16px; 
-  padding: 2.5rem; 
+  border-radius: 16px;
+  padding: 2.5rem;
   width: 100%;
   max-width: 480px;
   min-height: 700px;
@@ -113,12 +113,12 @@ h1 {
   gap: 1rem;
 }
 
-input { 
-  width: 100%; 
+input {
+  width: 100%;
   box-sizing: border-box;
-  padding: 1rem; 
-  background: rgba(0, 0, 0, 0.3); 
-  color: #fff; 
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.3);
+  color: #fff;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
   font-family: 'JetBrains Mono', monospace;
@@ -134,21 +134,21 @@ input:focus {
 
 button {
   position: relative;
-  width: 100%; 
-  padding: 1rem; 
-  background: var(--accent); 
+  width: 100%;
+  padding: 1rem;
+  background: var(--accent);
   color: #fff;
-  border: none; 
+  border: none;
   border-radius: 8px;
   font-weight: 600;
   font-size: 1rem;
-  cursor: pointer; 
+  cursor: pointer;
   transition: transform 0.1s, filter 0.3s;
   overflow: hidden;
 }
 
-button:hover { 
-  filter: brightness(1.15); 
+button:hover {
+  filter: brightness(1.15);
 }
 
 button:active {
