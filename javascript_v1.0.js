@@ -18,6 +18,15 @@ const WE_FAKE_LOGS = [
   "> Đang chờ phản hồi từ DLL..."
 ];
 
+const MC5_FAKE_LOGS = [
+  "> Đang khởi tạo công cụ cấp phép MITACO5 V2...",
+  "> Đang tải module bảo vệ: armadillo.sys...",
+  "> Đang đọc chuỗi Serial thiết bị: {SN}",
+  "> Đang tính toán Base: SN * 2006...",
+  "> Đang tạo Checksum từ chữ số cuối...",
+  "> Đang hợp nhất mã cấp phép cuối cùng..."
+];
+
 const RJ_FAKE_LOGS = [
   "> Đang phân tích chuỗi Serial thiết bị Ronald Jack...",
   "> Đang trích xuất các chữ số: {SN}",
@@ -86,6 +95,21 @@ function calculateRJ(rawSerial) {
   };
 }
 
+function generateMitaco5Key(rawSerial) {
+  let numericStr = '';
+  for (let char of rawSerial) {
+    if (char >= '0' && char <= '9') numericStr += char;
+  }
+  const sn = parseInt(numericStr, 10);
+  if (isNaN(sn)) {
+    return { error: 'Serial phải là số' };
+  }
+  const base = sn * 2006;
+  const C_last = (sn % 10 * 4) % 10;
+  const C = 7937740 + C_last - 10 * Math.floor(C_last / 8);
+  return { key: String(base + C) };
+}
+
 genBtn.addEventListener('click', async () => {
   const sn = snInput.value.trim();
   if (!sn) {
@@ -114,6 +138,28 @@ genBtn.addEventListener('click', async () => {
       resultContainer.classList.remove('error');
       appendLog(`> THÀNH CÔNG: Đã tạo mã!`, 'success');
       resultEl.textContent = `🔑 ${rjResult.key}`;
+    }
+
+    resultContainer.classList.remove('hidden');
+    genBtn.disabled = false;
+    snInput.disabled = false;
+    return;
+  }
+
+  if (deviceType === 'mitaco5') {
+    const simulationPromise = simulateLogs(sn, MC5_FAKE_LOGS);
+    const mc5Result = generateMitaco5Key(sn);
+
+    await simulationPromise;
+
+    if (mc5Result.error) {
+      resultContainer.classList.add('error');
+      appendLog(`> LỖI: ${mc5Result.error}`, 'error');
+      resultEl.textContent = `❌ ${mc5Result.error}`;
+    } else {
+      resultContainer.classList.remove('error');
+      appendLog(`> THÀNH CÔNG: Mã cấp phép -> ${mc5Result.key}`, 'success');
+      resultEl.textContent = `🔑 ${mc5Result.key}`;
     }
 
     resultContainer.classList.remove('hidden');
