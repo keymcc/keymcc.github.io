@@ -45,7 +45,7 @@ genBtn.addEventListener('click', async () => {
     return;
   }
 
-  const deviceType = document.querySelector('input[name="device"]:checked').value;
+  const deviceType = document.getElementById('device').value;
 
   genBtn.disabled = true;
   snInput.disabled = true;
