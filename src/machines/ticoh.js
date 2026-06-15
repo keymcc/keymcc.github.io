@@ -1,4 +1,4 @@
-const TH_FAKE_LOGS = [
+export const TH_FAKE_LOGS = [
   "> Đang khởi tạo module TicoH...",
   "> Đang đọc chuỗi Serial: {SN}",
   "> Đang trích xuất phân đoạn a",
@@ -34,7 +34,7 @@ function calculateTH(rawSerial) {
   return { key: String(key) };
 }
 
-const TH_MACHINE = {
+export const TH_MACHINE = {
   logs: TH_FAKE_LOGS,
   calculate: calculateTH
 };

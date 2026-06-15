@@ -1,3 +1,9 @@
+import './style.css';
+import { RJ_MACHINE } from './machines/ronaldjack.js';
+import { MC5_MACHINE } from './machines/mitaco5.js';
+import { WE_MACHINE } from './machines/wiseeye.js';
+import { TH_MACHINE } from './machines/ticoh.js';
+
 const snInput = document.getElementById('sn');
 const genBtn = document.getElementById('gen');
 const resultContainer = document.getElementById('result-container');
@@ -55,7 +61,7 @@ genBtn.addEventListener('click', async () => {
                   deviceType === 'ticoh' ? TH_MACHINE :
                   WE_MACHINE;
 
-  const calcResult = machine.calculate(sn);
+  const calcResult = machine.calculate(sn, appendLog);
   const simPromise = simulateLogs(sn, machine.logs);
 
   const result = await calcResult;

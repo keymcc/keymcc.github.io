@@ -1,2 +1,4 @@
 .vscode
 keygen.py
+node_modules/
+dist/

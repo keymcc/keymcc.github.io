@@ -1,4 +1,4 @@
-const MC5_FAKE_LOGS = [
+export const MC5_FAKE_LOGS = [
   "> Đang khởi tạo công cụ cấp phép MITACO5 V2...",
   "> Đang tải module bảo vệ: armadillo.sys...",
   "> Đang đọc chuỗi Serial thiết bị: {SN}",
@@ -22,7 +22,7 @@ function generateMitaco5Key(rawSerial) {
   return { key: String(base + C) };
 }
 
-const MC5_MACHINE = {
+export const MC5_MACHINE = {
   logs: MC5_FAKE_LOGS,
   calculate: generateMitaco5Key
 };

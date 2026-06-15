@@ -1,4 +1,4 @@
-const RJ_FAKE_LOGS = [
+export const RJ_FAKE_LOGS = [
   "> Đang phân tích chuỗi Serial thiết bị Ronald Jack...",
   "> Đang trích xuất các chữ số: {SN}",
   "> Đang phân tách chuỗi thành các phân đoạn a, b, c...",
@@ -29,14 +29,11 @@ function calculateRJ(rawSerial) {
   }
 
   const standardKey = a + b + 2598118;
-  const legacyKey = a + b + 140893;
 
-  return {
-    key: `${standardKey}`
-  };
+  return { key: String(standardKey) };
 }
 
-const RJ_MACHINE = {
+export const RJ_MACHINE = {
   logs: RJ_FAKE_LOGS,
   calculate: calculateRJ
 };
