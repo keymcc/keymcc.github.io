@@ -6,35 +6,6 @@ const terminalWrapper = document.getElementById('terminal-wrapper');
 const terminalContent = document.getElementById('terminal-content');
 const terminalBody = document.getElementById('terminal-body');
 
-const WE_FAKE_LOGS = [
-  "> Đang khởi động môi trường Wine trong /wine...",
-  "> Đang kết nối tới màn hình ảo Xvfb :99...",
-  "> Đang đăng ký thành phần ActiveX: zkemkeeper.dll...",
-  "> Đang tải các thư viện phụ thuộc: commpro.dll, plcommpro.dll...",
-  "> Đang khởi tạo giao diện COM WiseEyeExtDevice.wseClass...",
-  "> Đang phân tích số Serial: {SN}",
-  "> Đang đảo ngược SN và tính toán tổng kiểm s1...",
-  "> Đang chuyển quyền thực thi cho giao diện COM...",
-  "> Đang chờ phản hồi từ DLL..."
-];
-
-const MC5_FAKE_LOGS = [
-  "> Đang khởi tạo công cụ cấp phép MITACO5 V2...",
-  "> Đang tải module bảo vệ: armadillo.sys...",
-  "> Đang đọc chuỗi Serial thiết bị: {SN}",
-  "> Đang tính toán Base: SN * 2006...",
-  "> Đang tạo Checksum từ chữ số cuối...",
-  "> Đang hợp nhất mã cấp phép cuối cùng..."
-];
-
-const RJ_FAKE_LOGS = [
-  "> Đang phân tích chuỗi Serial thiết bị Ronald Jack...",
-  "> Đang trích xuất các chữ số: {SN}",
-  "> Đang phân tách chuỗi thành các phân đoạn a, b, c...",
-  "> Đang áp dụng thuật toán tổng kiểm mã chuẩn...",
-  "> Hoàn tất tính toán mã."
-];
-
 let logInterval;
 
 function appendLog(text, className = '') {
@@ -61,53 +32,8 @@ async function simulateLogs(sn, logsArray) {
         clearInterval(logInterval);
         resolve();
       }
-    }, 300 + Math.random() * 300); // 300-600ms
+    }, 300 + Math.random() * 300);
   });
-}
-
-function calculateRJ(rawSerial) {
-  let numericSerial = '';
-  for (let char of rawSerial) {
-    if (char >= '0' && char <= '9') {
-      numericSerial += char;
-    }
-  }
-
-  if (numericSerial.length < 4) {
-    return { error: 'Số Serial quá ngắn' };
-  }
-
-  const strA = numericSerial.substring(0, 2);
-  const strB = numericSerial.substring(numericSerial.length - 4);
-
-  const a = parseInt(strA, 10);
-  const b = parseInt(strB, 10);
-
-  if (isNaN(a) || isNaN(b)) {
-    return { error: 'Lỗi phân tích cú pháp số Serial.' };
-  }
-
-  const standardKey = a + b + 2598118;
-  const legacyKey = a + b + 140893;
-
-  return {
-    key: `${standardKey}`
-  };
-}
-
-function generateMitaco5Key(rawSerial) {
-  let numericStr = '';
-  for (let char of rawSerial) {
-    if (char >= '0' && char <= '9') numericStr += char;
-  }
-  const sn = parseInt(numericStr, 10);
-  if (isNaN(sn)) {
-    return { error: 'Serial phải là số' };
-  }
-  const base = sn * 2006;
-  const C_last = (sn % 10 * 4) % 10;
-  const C = 7937740 + C_last - 10 * Math.floor(C_last / 8);
-  return { key: String(base + C) };
 }
 
 genBtn.addEventListener('click', async () => {
@@ -124,93 +50,28 @@ genBtn.addEventListener('click', async () => {
   genBtn.disabled = true;
   snInput.disabled = true;
 
-  if (deviceType === 'ronaldjack') {
-    const simulationPromise = simulateLogs(sn, RJ_FAKE_LOGS);
-    const rjResult = calculateRJ(sn);
+  const machine = deviceType === 'ronaldjack' ? RJ_MACHINE :
+                  deviceType === 'mitaco5' ? MC5_MACHINE :
+                  deviceType === 'ticoh' ? TH_MACHINE :
+                  WE_MACHINE;
 
-    await simulationPromise;
+  const calcResult = machine.calculate(sn);
+  const simPromise = simulateLogs(sn, machine.logs);
 
-    if (rjResult.error) {
-      resultContainer.classList.add('error');
-      appendLog(`> LỖI: ${rjResult.error}`, 'error');
-      resultEl.textContent = `❌ ${rjResult.error}`;
-    } else {
-      resultContainer.classList.remove('error');
-      appendLog(`> THÀNH CÔNG: Đã tạo mã!`, 'success');
-      resultEl.textContent = `🔑 ${rjResult.key}`;
-    }
+  const result = await calcResult;
+  await simPromise;
 
-    resultContainer.classList.remove('hidden');
-    genBtn.disabled = false;
-    snInput.disabled = false;
-    return;
-  }
-
-  if (deviceType === 'mitaco5') {
-    const simulationPromise = simulateLogs(sn, MC5_FAKE_LOGS);
-    const mc5Result = generateMitaco5Key(sn);
-
-    await simulationPromise;
-
-    if (mc5Result.error) {
-      resultContainer.classList.add('error');
-      appendLog(`> LỖI: ${mc5Result.error}`, 'error');
-      resultEl.textContent = `❌ ${mc5Result.error}`;
-    } else {
-      resultContainer.classList.remove('error');
-      appendLog(`> THÀNH CÔNG: Mã cấp phép -> ${mc5Result.key}`, 'success');
-      resultEl.textContent = `🔑 ${mc5Result.key}`;
-    }
-
-    resultContainer.classList.remove('hidden');
-    genBtn.disabled = false;
-    snInput.disabled = false;
-    return;
-  }
-
-  // WiseEye Flow
-  const simulationPromise = simulateLogs(sn, WE_FAKE_LOGS);
-  let isFetchComplete = false;
-
-  const wakeUpTimeout = setTimeout(() => {
-    if (!isFetchComplete) {
-      appendLog("> Đang đánh thức máy chủ Render... Vui lòng đợi khoảng 1 phút...", "warning");
-    }
-  }, 5000); // 5 seconds wait indicates Render is asleep
-
-  try {
-    const resp = await fetch(`https://keymcc.onrender.com/api/key?sn=${encodeURIComponent(sn)}`);
-    isFetchComplete = true;
-    clearTimeout(wakeUpTimeout);
-
-    const data = await resp.json();
-    await simulationPromise;
-
-    if (data.error && data.error === "Failed to capture the required strings for key calculation.") {
-      data.error = "Không thể trích xuất chuỗi yêu cầu để tính toán mã.";
-    }
-
-    if (resp.ok) {
-      resultContainer.classList.remove('error');
-      appendLog(`> THÀNH CÔNG: Đã tạo mã -> ${data.key}`, 'success');
-      resultEl.textContent = `🔑 ${data.key}`;
-    } else {
-      resultContainer.classList.add('error');
-      appendLog(`> LỖI: ${data.error}`, 'error');
-      resultEl.textContent = `❌ ${data.error}`;
-    }
-  } catch (e) {
-    isFetchComplete = true;
-    clearTimeout(wakeUpTimeout);
-    clearInterval(logInterval);
-
+  if (result.error) {
     resultContainer.classList.add('error');
-    appendLog('> LỖI: Không thể kết nối tới máy chủ', 'error');
-    resultEl.textContent = '❌ Không thể kết nối tới máy chủ';
-  } finally {
-    resultContainer.classList.remove('hidden');
-    genBtn.disabled = false;
-    snInput.disabled = false;
+    appendLog(`> LỖI: ${result.error}`, 'error');
+    resultEl.textContent = `❌ ${result.error}`;
+  } else {
+    resultContainer.classList.remove('error');
+    appendLog(`> THÀNH CÔNG: Đã tạo mã -> ${result.key}`, 'success');
+    resultEl.textContent = `🔑 ${result.key}`;
   }
-});
 
+  resultContainer.classList.remove('hidden');
+  genBtn.disabled = false;
+  snInput.disabled = false;
+});
