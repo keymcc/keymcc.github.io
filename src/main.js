@@ -3,6 +3,7 @@ import { RJ_MACHINE } from './machines/ronaldjack.js';
 import { MC5_MACHINE } from './machines/mitaco5.js';
 import { WE_MACHINE } from './machines/wiseeye.js';
 import { TH_MACHINE } from './machines/ticoh.js';
+import { MP2_MACHINE} from './machines/mitaprov2.js';
 
 const snInput = document.getElementById('sn');
 const genBtn = document.getElementById('gen');
@@ -59,6 +60,7 @@ genBtn.addEventListener('click', async () => {
   const machine = deviceType === 'ronaldjack' ? RJ_MACHINE :
                   deviceType === 'mitaco5' ? MC5_MACHINE :
                   deviceType === 'ticoh' ? TH_MACHINE :
+                  deviceType === 'mitaprov2' ? MP2_MACHINE :
                   WE_MACHINE;
 
   const calcResult = machine.calculate(sn, appendLog);
